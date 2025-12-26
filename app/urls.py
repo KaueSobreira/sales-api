@@ -7,4 +7,6 @@ urlpatterns = [
     path('api/v1/', include('docs.urls')),
 
     path('api/v1/', include('brands.urls')),
+
+    path('api/v1/', include('categories.urls')),
 ]
