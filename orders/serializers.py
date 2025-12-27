@@ -87,3 +87,18 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 )
 
         return order
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemCreateSerializer(many=True)
+    installments = InstallmentOrderCreateSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'public_id',
+            'situation',
+            'items',
+            'total_value',
+            'installments',
+            'created_at'
+        ]

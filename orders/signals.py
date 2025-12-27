@@ -15,7 +15,7 @@ def decrease_stock_on_order_item_create(sender, instance, created, **kwargs):
 @receiver(pre_save, sender=Order)
 def restore_stock_on_cancel(sender, instance, **kwargs):
     if not instance.pk:
-        return  # pedido novo
+        return
 
     old_order = Order.objects.get(pk=instance.pk)
 
