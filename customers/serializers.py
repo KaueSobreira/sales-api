@@ -7,7 +7,7 @@ class PhysicalPersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PhysicalPerson
-        fields = '__all__'
+        fields = ['id', 'full_name', 'cpf', 'birth_date']
 
 class LegalPersonSerializer(serializers.ModelSerializer):
 
@@ -25,15 +25,48 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = '__all__'
 
-    def validate_type(self, value, data):
-        if value == "PF" and not data.get("physical_person"):
+    def validate(self, data):
+        if data["type"] == "PF" and not data.get("physical_person"):
             raise serializers.ValidationError(
                 {"physical_person": "Dados de pessoa física são obrigatórios"}
             )
 
-        if value == "PJ" and not data.get("legal_person"):
+        if data["type"] == "PJ" and not data.get("legal_person"):
             raise serializers.ValidationError(
                 {"legal_person": "Dados de pessoa jurídica são obrigatórios"}
             )
 
-        return value
+        return data
+    
+    def create(self, validated_data):
+        physical_data = validated_data.pop("physical_person", None)
+        legal_data = validated_data.pop("legal_person", None)
+
+        client = Client.objects.create(**validated_data)
+
+        if client.type == "PF":
+            PhysicalPerson.objects.create(client=client, **physical_data)
+
+        if client.type == "PJ":
+            LegalPerson.objects.create(client=client, **legal_data)
+
+        return client
+
+class ClientSerializerBFF(serializers.ModelSerializer):
+    physical_person = PhysicalPersonSerializer(read_only=True)
+    legal_person = LegalPersonSerializer(read_only=True)
+
+
+    class Meta:
+        model = Client
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if instance.type == 'PF':
+            data.pop("legal_person", None)
+        elif instance.type == 'PJ':
+            data.pop("physical_person", None)
+
+        return data
