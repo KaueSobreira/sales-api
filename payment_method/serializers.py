@@ -8,3 +8,10 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
         fields = '__all__'
+
+class PaymentMethodSerializerBFF(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = PaymentMethod
+        fields = ['id', 'name']
