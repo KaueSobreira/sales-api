@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import transaction
 from .models import Client, PhysicalPerson, LegalPerson
 
 
@@ -30,7 +31,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
         if not client_type:
             raise serializers.ValidationError(
-                {"Error": "O Type não foi informado"}
+                {"type": "O tipo de cliente é obrigatório"}
             )
         if data["type"] == "PF" and not data.get("physical_person"):
             raise serializers.ValidationError(
@@ -43,7 +44,8 @@ class ClientSerializer(serializers.ModelSerializer):
             )
 
         return data
-    
+
+    @transaction.atomic
     def create(self, validated_data):
         physical_data = validated_data.pop("physical_person", None)
         legal_data = validated_data.pop("legal_person", None)
@@ -58,6 +60,7 @@ class ClientSerializer(serializers.ModelSerializer):
 
         return client
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         physical_data = validated_data.pop("physical_person", None)
         legal_data = validated_data.pop("legal_person", None)
