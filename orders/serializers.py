@@ -137,7 +137,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         return order
 
 
-class OrderSerializer(serializers.ModelSerializer):
+class OrderSerializerDetail(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     installments = InstallmentOrderSerializer(many=True, read_only=True)
     client = ClientSerializerBFF()
@@ -153,6 +153,21 @@ class OrderSerializer(serializers.ModelSerializer):
             "total_value",
             "payment_method",
             "installments",
+            "created_at",
+        ]
+
+class OrderSerializer(serializers.ModelSerializer):
+    client = ClientSerializerBFF()
+    payment_method = PaymentMethodSerializerBFF()
+
+    class Meta:
+        model = Order
+        fields = [
+            "public_id",
+            "situation",
+            "client",
+            "total_value",
+            "payment_method",
             "created_at",
         ]
 

@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from .models import Order
-from .serializers import OrderCreateSerializer, OrderSerializer,  OrderUpdateSerializer
+from .serializers import OrderCreateSerializer, OrderSerializer, OrderSerializerDetail,  OrderUpdateSerializer
 
 
 class OrderCreateListView(generics.ListCreateAPIView):
@@ -19,7 +19,7 @@ class OrderUpdateDestroyListView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return OrderSerializer
+            return OrderSerializerDetail
         elif self.request.method == 'PATCH':
             return OrderUpdateSerializer
         return OrderCreateSerializer
