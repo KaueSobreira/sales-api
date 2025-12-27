@@ -18,6 +18,6 @@ class ClientUpdateDestroyListView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Client.objects.all()
     
     def get_serializer_class(self):
-        if self.request.method in ['PUT', 'PATCH']:
+        if self.request.method == 'GET':
             return ClientSerializerBFF
         return ClientSerializer

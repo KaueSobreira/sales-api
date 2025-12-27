@@ -14,7 +14,7 @@ class LegalPersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LegalPerson
-        fields = '__all__'
+        fields = ['id', 'company_name', 'trade_name', 'cnpj']
 
 class ClientSerializer(serializers.ModelSerializer):
     physical_person = PhysicalPersonSerializer(required=False)
@@ -26,6 +26,12 @@ class ClientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
+        client_type = data.get("type")
+
+        if not client_type:
+            raise serializers.ValidationError(
+                {"Error": "O Type não foi informado"}
+            )
         if data["type"] == "PF" and not data.get("physical_person"):
             raise serializers.ValidationError(
                 {"physical_person": "Dados de pessoa física são obrigatórios"}
@@ -51,6 +57,28 @@ class ClientSerializer(serializers.ModelSerializer):
             LegalPerson.objects.create(client=client, **legal_data)
 
         return client
+
+    def update(self, instance, validated_data):
+        physical_data = validated_data.pop("physical_person", None)
+        legal_data = validated_data.pop("legal_person", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if instance.type == "PF" and physical_data:
+            PhysicalPerson.objects.update_or_create(
+                client=instance,
+                defaults=physical_data
+            )
+
+        if instance.type == "PJ" and legal_data:
+            LegalPerson.objects.update_or_create(
+                client=instance,
+                defaults=legal_data
+            )
+
+        return instance
 
 class ClientSerializerBFF(serializers.ModelSerializer):
     physical_person = PhysicalPersonSerializer(read_only=True)
